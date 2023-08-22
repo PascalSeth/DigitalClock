@@ -1,100 +1,82 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 
 export default function StopWatch() {
-	const [flags, setFlags] = useState([])
-	const [intervalId, setIntervalId] = useState(null);
-	const [isRunning, setIsRunning] = useState(false);
-	const [stopWatch, setStopWatch] = useState({
-		hours: 0,
-		minutes: 0,
-		seconds: 0,
-		milliseconds: 0
-	})
-	
-	useEffect(() => {
-		if(isRunning){
-			setIntervalId(
-				setInterval(() => {
-					setStopWatch(value => {
-						let {hours, minutes, seconds, milliseconds } = value;
-						milliseconds+=1;
-			
-						if(milliseconds === 100){
-							milliseconds = 0;
-							seconds+=1;
-						}
-			
-						if(seconds === 60){
-							seconds=0;
-							minutes+=1;
-						}
-			
-						if(minutes === 60){
-							minutes=0;
-							hours+=1;
-						}
-			
-						return {
-							hours,
-							minutes,
-							seconds,
-							milliseconds
-						}
-					})
-				}, 10)	
-			)
-		}else {
-			clearInterval(intervalId)
-			setIntervalId(null)
-		}
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [intervalId, setIntervalId] = useState(null);
+  const [flags, setFlags] = useState([]);
 
-		return () => clearInterval(intervalId);
-	}, [isRunning])
+  useEffect(() => {
+    if (isRunning) {
+      const newIntervalId = setInterval(() => {
+        setTime((prevTime) => prevTime + 1); // Increase the time by 1
+      }, 10);
 
-	const handleStartStopEvent = () => {
-		console.log(`values \ntimer is running? ${isRunning}`)
-		setIsRunning(value => !value)
-	}
+      setIntervalId(newIntervalId);
+    } else {
+      clearInterval(intervalId);
+    }
 
-	const recordFlag = () => {
-		if(isRunning){
-			const temp= `${stopWatch.hours}:${stopWatch.minutes}:${stopWatch.seconds}.${stopWatch.milliseconds}`;
-			setFlags(values => [...values, temp])
-			console.log(temp);
-			console.log('flags = ',flags)
-		}else{
-			console.log('start timer to set flags = ',flags)
-		}
-	}
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [isRunning, intervalId]);
 
-	const resetTimer = () => {
-		setStopWatch({ hours: 0, minutes: 0, seconds: 0, milliseconds: 0})
-		setFlags([]);
-	}
-	
-	const {hours, minutes, seconds, milliseconds} = stopWatch;
-	return (
-		<div>
-			<h1>
-				{hours.toString().padStart(2, '0')}:
-				{minutes.toString().padStart(2, '0')}:
-				{seconds.toString().padStart(2, '0')}.
-				{milliseconds.toString().padStart(2, '0')}
-			</h1>
-			<button onClick={handleStartStopEvent}>
-				{isRunning? 'pause': 'start'}
-			</button>
-			<button onClick={recordFlag}>
-				flag
-			</button>
-			<button onClick={resetTimer}>
-				reset Timer
-			</button>
-			<ul>
-				{flags?.map((value,id) => 
-					<li key={id}>{value}</li>
-				)}
-			</ul>
-		</div>
-	)
+  const handleStartStopEvent = () => {
+    setIsRunning((prevIsRunning) => !prevIsRunning);
+  };
+
+  const recordFlag = () => {
+    if (isRunning) {
+      // Convert time to a readable format
+      const formattedTime = formatTime(time);
+      setFlags((prevFlags) => [...prevFlags, formattedTime]);
+    }
+  };
+
+  const resetTimer = () => {
+    setTime(0);
+    setFlags([]);
+    setIsRunning(false);
+  };
+
+  const formatTime = (time) => {
+    const milliseconds = String(time % 100).padStart(2, '0');
+    const seconds = String(Math.floor((time / 100) % 60)).padStart(2, '0');
+    const minutes = String(Math.floor((time / 6000) % 60)).padStart(2, '0');
+    const hours = String(Math.floor(time / 360000)).padStart(2, '0');
+
+    return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl mb-4">{formatTime(time)}</h1>
+        <button
+          onClick={handleStartStopEvent}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2"
+        >
+          {isRunning ? 'Pause' : 'Start'}
+        </button>
+        <button
+          onClick={recordFlag}
+          className="bg-green-500 hover.bg-green-700 text-white font-bold py-2 px-4 rounded mx-2"
+        >
+          Flag
+        </button>
+        <button
+          onClick={resetTimer}
+          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mx-2"
+        >
+          Reset Timer
+        </button>
+        <ul className="mt-4">
+          {flags.map((value, id) => (
+            <li key={id}>{value}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 }

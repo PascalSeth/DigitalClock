@@ -44,7 +44,7 @@ export const DigitalClock = () => {
 					</div>
 					
 					<div className='flex-grow'>
-						<span>Bangalore, india</span>
+						<span>Africa, Ghana</span>
 					</div>
 					
 					<div className=''>
